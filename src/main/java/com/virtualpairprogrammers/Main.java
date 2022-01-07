@@ -10,6 +10,8 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import com.google.common.collect.Iterables;
+
 import scala.Tuple2;
 
 public class Main {
@@ -29,11 +31,17 @@ public class Main {
 				.setMaster("local[*]");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		
-		sc.parallelize(inputData)
-				.mapToPair(rawValue -> new Tuple2<String, Long>(rawValue.split(":")[0], 1L))
-				.reduceByKey((value1, value2) -> value1 + value2)
-				.foreach(tuple -> System.out.println(tuple._1 + " : " + tuple._2));
+//		sc.parallelize(inputData)
+//				.mapToPair(rawValue -> new Tuple2<String, Long>(rawValue.split(":")[0], 1L))
+//				.reduceByKey((value1, value2) -> value1 + value2)
+//				.foreach(tuple -> System.out.println(tuple._1 + " : " + tuple._2));
 		
+		//groupByKey version
+		
+		sc.parallelize(inputData)
+		.mapToPair(rawValue -> new Tuple2<String, Long>(rawValue.split(":")[0], 1L))
+		.groupByKey()
+		.foreach(tuple -> System.out.println(tuple._1 + " has " + Iterables.size(tuple._2) + " instances"));
 		sc.close();
 	}
 
