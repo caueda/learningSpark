@@ -6,17 +6,21 @@ import java.util.List;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import scala.Tuple2;
 
 public class Main {
 
 	public static void main(String[] args) {
-		List<Integer> inputData = new ArrayList<>();
-		inputData.add(35);
-		inputData.add(12);
-		inputData.add(90);
-		inputData.add(20);
+		List<String> inputData = new ArrayList<>();
+		inputData.add("WARN: Tuesday 4 September 0405");
+		inputData.add("ERROR: Tuesday 4 September 0408");
+		inputData.add("FATAL: Wednesday 5 September 1632");
+		inputData.add("ERROR: Friday 7 September 1854");
+		inputData.add("WARN: Saturday 8 September 1942");
 		
 		Logger.getLogger("org.apache").setLevel(Level.WARN);
 		
@@ -25,15 +29,17 @@ public class Main {
 				.setMaster("local[*]");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		
-		JavaRDD<Integer> myRdd = sc.parallelize(inputData);
+		JavaRDD<String> originalLogMessages = sc.parallelize(inputData);
 		
-		Integer result = myRdd.reduce((value1, value2) -> value1 + value2);		
+		JavaPairRDD<String, Long> pairRdd = originalLogMessages.mapToPair(rawValue -> {
+			String[] columns = rawValue.split(":");
+			String level = columns[0];
+			return new Tuple2<>(level, 1L);
+		});
 		
-		JavaRDD<Double> sqrRdd = myRdd.map(value -> Math.sqrt(value));
+		JavaPairRDD<String, Long> sumsRdd = pairRdd.reduceByKey((value1, value2) -> value1 + value2);
 		
-		sqrRdd.foreach(System.out::println);
-	
-		System.out.println("Result: " + result);
+		sumsRdd.foreach(tuple -> System.out.println(tuple._1 + " : " + tuple._2));
 		
 		sc.close();
 	}
