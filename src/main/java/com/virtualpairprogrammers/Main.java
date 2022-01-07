@@ -29,17 +29,10 @@ public class Main {
 				.setMaster("local[*]");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		
-		JavaRDD<String> originalLogMessages = sc.parallelize(inputData);
-		
-		JavaPairRDD<String, Long> pairRdd = originalLogMessages.mapToPair(rawValue -> {
-			String[] columns = rawValue.split(":");
-			String level = columns[0];
-			return new Tuple2<>(level, 1L);
-		});
-		
-		JavaPairRDD<String, Long> sumsRdd = pairRdd.reduceByKey((value1, value2) -> value1 + value2);
-		
-		sumsRdd.foreach(tuple -> System.out.println(tuple._1 + " : " + tuple._2));
+		sc.parallelize(inputData)
+				.mapToPair(rawValue -> new Tuple2<String, Long>(rawValue.split(":")[0], 1L))
+				.reduceByKey((value1, value2) -> value1 + value2)
+				.foreach(tuple -> System.out.println(tuple._1 + " : " + tuple._2));
 		
 		sc.close();
 	}
