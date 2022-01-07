@@ -12,11 +12,11 @@ import org.apache.spark.api.java.JavaSparkContext;
 public class Main {
 
 	public static void main(String[] args) {
-		List<Double> inputData = new ArrayList<>();
-		inputData.add(35.5);
-		inputData.add(12.49943);
-		inputData.add(90.32);
-		inputData.add(20.32);
+		List<Integer> inputData = new ArrayList<>();
+		inputData.add(35);
+		inputData.add(12);
+		inputData.add(90);
+		inputData.add(20);
 		
 		Logger.getLogger("org.apache").setLevel(Level.WARN);
 		
@@ -25,8 +25,16 @@ public class Main {
 				.setMaster("local[*]");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		
-		JavaRDD<Double> myRdd = sc.parallelize(inputData);
+		JavaRDD<Integer> myRdd = sc.parallelize(inputData);
+		
+		Integer result = myRdd.reduce((value1, value2) -> value1 + value2);		
+		
+		JavaRDD<Double> sqrRdd = myRdd.map(value -> Math.sqrt(value));
+		
+		sqrRdd.foreach(System.out::println);
 	
+		System.out.println("Result: " + result);
+		
 		sc.close();
 	}
 
