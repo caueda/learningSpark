@@ -1,6 +1,7 @@
 package com.virtualpairprogrammers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Level;
@@ -31,17 +32,12 @@ public class Main {
 				.setMaster("local[*]");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		
-//		sc.parallelize(inputData)
-//				.mapToPair(rawValue -> new Tuple2<String, Long>(rawValue.split(":")[0], 1L))
-//				.reduceByKey((value1, value2) -> value1 + value2)
-//				.foreach(tuple -> System.out.println(tuple._1 + " : " + tuple._2));
+		JavaRDD<String> sentences = sc.parallelize(inputData);
 		
-		//groupByKey version
+		JavaRDD<String> flatMap = sentences.flatMap(value -> Arrays.asList(value.split(" ")).iterator());
 		
-		sc.parallelize(inputData)
-		.mapToPair(rawValue -> new Tuple2<String, Long>(rawValue.split(":")[0], 1L))
-		.groupByKey()
-		.foreach(tuple -> System.out.println(tuple._1 + " has " + Iterables.size(tuple._2) + " instances"));
+		flatMap.foreach(value -> System.out.println(value));
+		
 		sc.close();
 	}
 
