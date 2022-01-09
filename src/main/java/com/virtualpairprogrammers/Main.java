@@ -36,7 +36,8 @@ public class Main {
 		
 		JavaRDD<String> flatMap = sentences.flatMap(value -> Arrays.asList(value.split(" ")).iterator());
 		
-		flatMap.foreach(value -> System.out.println(value));
+		flatMap.filter(word -> word.length() > 1)
+			.foreach(value -> System.out.println(value));
 		
 		sc.close();
 	}
