@@ -2,6 +2,7 @@ package com.virtualpairprogrammers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -52,6 +53,9 @@ public class ViewingFigures
 				})
 				.reduceByKey((v1, v2) -> v1 + v2)
 				.foreach(s -> System.out.println(s));
+
+		Scanner scanner = new Scanner(System.in);
+		scanner.nextLine();
 	}
 
 	private static JavaPairRDD<Integer, String> setUpTitlesDataRdd(JavaSparkContext sc, boolean testMode) {
