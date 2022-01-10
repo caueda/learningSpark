@@ -18,12 +18,7 @@ import scala.Tuple2;
 public class Main {
 
 	public static void main(String[] args) {
-		List<String> inputData = new ArrayList<>();
-		inputData.add("WARN: Tuesday 4 September 0405");
-		inputData.add("ERROR: Tuesday 4 September 0408");
-		inputData.add("FATAL: Wednesday 5 September 1632");
-		inputData.add("ERROR: Friday 7 September 1854");
-		inputData.add("WARN: Saturday 8 September 1942");
+		System.setProperty("hadoop.home.dir", "c:/hadoop");
 		
 		Logger.getLogger("org.apache").setLevel(Level.WARN);
 		
@@ -32,13 +27,20 @@ public class Main {
 				.setMaster("local[*]");
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		
-		JavaRDD<String> sentences = sc.parallelize(inputData);
-		
-		JavaRDD<String> flatMap = sentences.flatMap(value -> Arrays.asList(value.split(" ")).iterator());
-		
-		flatMap.filter(word -> word.length() > 1)
-			.foreach(value -> System.out.println(value));
-		
+		JavaRDD<String> initialRdd = sc.textFile("src/main/resources/subtitles/input.txt");
+
+		initialRdd
+				.map(sentence -> sentence.replaceAll("[^a-zA-Z\\s]", "").toLowerCase())
+				.filter(sentence -> sentence.trim().length() > 0)
+				.flatMap(sentence -> Arrays.asList(sentence.split(" ")).iterator())
+				.filter(word -> word.trim().length() > 0)
+				.filter(Util::isNotBoring)
+				.mapToPair(word -> new Tuple2<String, Long>( word, 1L))
+				.reduceByKey((v1, v2) -> v1 + v2)
+				.mapToPair(stringLongTuple2 -> new Tuple2<>(stringLongTuple2._2, stringLongTuple2._1))
+				.sortByKey(false)
+				.take(10).forEach(System.out::println);
+
 		sc.close();
 	}
 
