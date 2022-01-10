@@ -33,11 +33,25 @@ public class ViewingFigures
 		JavaPairRDD<Integer, Integer> chapterData = setUpChapterDataRdd(sc, testMode);
 		JavaPairRDD<Integer, String> titlesData = setUpTitlesDataRdd(sc, testMode);
 
-		// Warmup
-		chapterData.mapToPair(row -> new Tuple2<>(row._2, 1L))
+		JavaPairRDD<Integer, Long> countChapterCourseRdd = chapterData.mapToPair(row -> new Tuple2<>(row._2, 1L))
+				.reduceByKey((v1, v2) -> v1 + v2);
+
+		JavaPairRDD<Integer, Long> courseByChaptersReadRDD = viewData.distinct()
+				.mapToPair(row -> new Tuple2<>(row._2, row._1))
+				.join(chapterData)
+				.mapToPair(row -> new Tuple2<>(row._2, 1L))
 				.reduceByKey((v1, v2) -> v1 + v2)
-				.foreach(c -> System.out.println(c));
-		sc.close();
+				.mapToPair(row -> new Tuple2<>(row._1._2, row._2));
+		courseByChaptersReadRDD.join(countChapterCourseRdd)
+				.mapValues(value -> Double.valueOf(value._1)/value._2)
+				.mapValues(value -> {
+					if(value > 0.9) return 10L;
+					if(value > 0.5) return 4L;
+					if(value > 0.25) return 2L;
+					return 0L;
+				})
+				.reduceByKey((v1, v2) -> v1 + v2)
+				.foreach(s -> System.out.println(s));
 	}
 
 	private static JavaPairRDD<Integer, String> setUpTitlesDataRdd(JavaSparkContext sc, boolean testMode) {
