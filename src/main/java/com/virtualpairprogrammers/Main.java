@@ -44,7 +44,8 @@ public class Main {
 		JavaPairRDD<Integer, Integer> visits = sc.parallelizePairs(visitsRaw);
 		JavaPairRDD<Integer, String> users = sc.parallelizePairs(usersRaw);
 
-		visits.join(users).foreach(value -> System.out.println(value));
+		JavaPairRDD<Integer, Tuple2<Integer, String>> join = visits.join(users);
+		join.foreach(st -> System.out.println(st));
 
 		sc.close();
 	}
