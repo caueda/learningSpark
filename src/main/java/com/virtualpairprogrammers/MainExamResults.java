@@ -1,7 +1,6 @@
 package com.virtualpairprogrammers;
 
-import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.max;
+import static org.apache.spark.sql.functions.*;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -27,7 +26,10 @@ public class MainExamResults {
 				.csv("src/main/resources/exams/students.csv");
 
 		dataset = dataset.groupBy("subject")
-				.agg(max(col("score").cast(DataTypes.IntegerType)).alias("max score "));
+				.pivot("year")
+				.agg(   round(avg(col("score")),2).alias("average")
+						,max(col("score").cast(DataTypes.IntegerType)).alias("max score ")
+				);
 
 		dataset.show(100);
 

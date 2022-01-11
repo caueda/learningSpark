@@ -59,8 +59,7 @@ public class MainSqlInMemoryData {
 								"September",
 								"October",
 								"November",
-								"December",
-								"Fakemonth"
+								"December"
 						).collect(Collectors.toList()))
 				.count().na().fill(0L);
 		dataset.show(100);
