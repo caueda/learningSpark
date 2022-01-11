@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -29,7 +30,10 @@ public class MainSql {
 				.option("header", true)
 				.csv("src/main/resources/exams/students.csv");
 
-		Dataset<Row> modernArtResults = dataset.filter("subject='Modern Art' and year >= 2007");
+		Column subjectColumn = dataset.col("subject");
+
+		Dataset<Row> modernArtResults = dataset.filter(subjectColumn.equalTo("Modern Art"));
+
 		modernArtResults.show();
 
 		sparkSession.close();
