@@ -28,8 +28,10 @@ public class MainSql {
 				.read()
 				.option("header", true)
 				.csv("src/main/resources/exams/students.csv");
-		dataset.show();
-		System.out.println("There are " + dataset.count());
+
+		Dataset<Row> modernArtResults = dataset.filter("subject='Modern Art' and year >= 2007");
+		modernArtResults.show();
+
 		sparkSession.close();
 	}
 
