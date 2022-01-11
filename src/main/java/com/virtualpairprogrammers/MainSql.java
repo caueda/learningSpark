@@ -32,9 +32,12 @@ public class MainSql {
 
 		Column subjectColumn = dataset.col("subject");
 
-		Dataset<Row> modernArtResults = dataset.filter(subjectColumn.equalTo("Modern Art"));
+//		Dataset<Row> modernArtResults = dataset.filter(subjectColumn.equalTo("Modern Art"));
 
-		modernArtResults.show();
+		dataset.createOrReplaceTempView("students");
+
+		sparkSession.sql("select max(score) from students where subject = 'Modern Art'")
+						.show();
 
 		sparkSession.close();
 	}
