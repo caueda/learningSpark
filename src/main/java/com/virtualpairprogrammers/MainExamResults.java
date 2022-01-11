@@ -25,12 +25,10 @@ public class MainExamResults {
 				.option("header", true)
 				.csv("src/main/resources/exams/students.csv");
 
-		dataset = dataset.groupBy("subject")
-				.pivot("year")
-				.agg(   round(avg(col("score")),2).alias("average")
-						,max(col("score").cast(DataTypes.IntegerType)).alias("max score ")
-				);
+		sparkSession.udf().register("hasPassed", grade-> grade.equals("A+"), DataTypes.BooleanType);
 
+//		dataset = dataset.withColumn("pass", lit( col("grade").equalTo("A+")));
+		dataset = dataset.withColumn("pass", callUDF("hasPassed", col("grade")));
 		dataset.show(100);
 
 		sparkSession.close();
