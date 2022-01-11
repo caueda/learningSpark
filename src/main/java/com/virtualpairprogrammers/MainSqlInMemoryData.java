@@ -29,22 +29,12 @@ public class MainSqlInMemoryData {
 				.config("spark.sql.warehouse.dir", "file:///c:/tmp/")
 				.getOrCreate();
 
-		List<Row> inMemory = new ArrayList<>();
+		Dataset<Row> dataset = sparkSession
+				.read()
+				.option("header", true)
+				.csv("src/main/resources/biglog.txt");
 
-		inMemory.add(RowFactory.create("WARN", "2016-12-31 04:19:32"));
-		inMemory.add(RowFactory.create("FATAL", "2016-12-31 03:22:34"));
-		inMemory.add(RowFactory.create("WARN", "2016-12-31 03:21:21"));
-		inMemory.add(RowFactory.create("INFO", "2015-4-21 14:32:21"));
-		inMemory.add(RowFactory.create("FATAL","2015-4-21 19:23:20"));
-
-
-		StructType schema = new StructType(new StructField[]{
-				new StructField("Level", DataTypes.StringType, false, Metadata.empty()),
-				new StructField("datetime", DataTypes.StringType, false, Metadata.empty()),
-		});
-		Dataset<Row> dataFrame = sparkSession.createDataFrame(inMemory, schema);
-
-		dataFrame.createOrReplaceTempView("logging_table");
+		dataset.createOrReplaceTempView("logging_table");
 
 		sparkSession.sql(
 				"select level, " +
