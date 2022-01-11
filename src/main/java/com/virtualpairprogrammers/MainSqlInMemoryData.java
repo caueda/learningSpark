@@ -42,7 +42,18 @@ public class MainSqlInMemoryData {
 				new StructField("Level", DataTypes.StringType, false, Metadata.empty()),
 				new StructField("datetime", DataTypes.StringType, false, Metadata.empty()),
 		});
-		sparkSession.createDataFrame(inMemory, schema).show();
+		Dataset<Row> dataFrame = sparkSession.createDataFrame(inMemory, schema);
+
+		dataFrame.createOrReplaceTempView("logging_table");
+
+		sparkSession.sql(
+				"select level, " +
+						"date_format(datetime, 'MMMM') as month, " +
+						"count(datetime) qtde " +
+				" from logging_table " +
+						" group by level, date_format(datetime, 'MMMM') " +
+						" order by level, date_format(datetime, 'MMMM') ")
+						.show();
 
 		sparkSession.close();
 	}
